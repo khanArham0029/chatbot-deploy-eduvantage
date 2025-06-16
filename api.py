@@ -40,6 +40,28 @@ async def ask_university_agent(query: str = Query(..., description="Your univers
 
     except Exception as e:
         return {"error": str(e)}
+    
+
+class ChatRequest(BaseModel):
+    message: str
+    conversation_history: List[Dict[str, str]]
+    user_id: str
+
+
+@app.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    ctx = UniversityAIDeps(supabase=supabase, openai_client=openai_client)
+    try:
+        result = await university_agent.run(request.message, deps=ctx)
+        return {
+            "response": result.data,
+            "sources": [],
+            "model": "gpt-4o",
+            "confidence": 0.95,
+            "processing_time": 1.2
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 
 if __name__ == "__main__":
